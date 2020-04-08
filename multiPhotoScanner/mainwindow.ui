@@ -2,21 +2,230 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>410</width>
+    <height>362</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>MainWindow</string>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
-  <widget class="QMenuBar" name="menubar"/>
-  <widget class="QStatusBar" name="statusbar"/>
+  <property name="minimumSize">
+   <size>
+    <width>410</width>
+    <height>362</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>410</width>
+    <height>362</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>multiPhotoScanner</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <property name="sizeConstraint">
+     <enum>QLayout::SetDefaultConstraint</enum>
+    </property>
+    <item>
+     <widget class="QGroupBox" name="scannerPropertiesGroup">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title">
+       <string>Scanner properties</string>
+      </property>
+      <layout class="QFormLayout" name="formLayout_3">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="scannerLabel">
+         <property name="text">
+          <string>Scanner</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="scannerComboBox"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="dpiLabel">
+         <property name="text">
+          <string>dpi</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="dpiSpinBox">
+         <property name="maximum">
+          <number>900</number>
+         </property>
+         <property name="value">
+          <number>400</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="picturePropertiesGroup">
+      <property name="title">
+       <string>Picture properties</string>
+      </property>
+      <layout class="QFormLayout" name="formLayout_2">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="nbOfPicturesLabel">
+         <property name="text">
+          <string>Number of pictures</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="nbOfPicturesSpinBox">
+         <property name="maximum">
+          <number>10</number>
+         </property>
+         <property name="value">
+          <number>3</number>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="orientationLabel">
+         <property name="text">
+          <string>Orientation</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QRadioButton" name="landscapeRadioButton">
+           <property name="text">
+            <string>Landscape</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="portraitRadioButton">
+           <property name="text">
+            <string>Portrait</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="pictureFormatLabel">
+         <property name="text">
+          <string>Picture format</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="pictureFormatComboBox"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="unitsLabel">
+         <property name="text">
+          <string>Units</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="unitsComboBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="heightLabel">
+         <property name="text">
+          <string>Height</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QDoubleSpinBox" name="heightSpinBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="widthLabel">
+         <property name="text">
+          <string>Width</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QDoubleSpinBox" name="widthComboBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="startScanButton">
+      <property name="text">
+       <string>Start Scan</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
  </widget>
+ <tabstops>
+  <tabstop>scannerComboBox</tabstop>
+  <tabstop>dpiSpinBox</tabstop>
+  <tabstop>nbOfPicturesSpinBox</tabstop>
+  <tabstop>landscapeRadioButton</tabstop>
+  <tabstop>portraitRadioButton</tabstop>
+  <tabstop>pictureFormatComboBox</tabstop>
+  <tabstop>unitsComboBox</tabstop>
+  <tabstop>heightSpinBox</tabstop>
+  <tabstop>widthComboBox</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
