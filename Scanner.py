@@ -3,7 +3,6 @@
 import gi
 import sys
 import PIL.Image
-
 gi.require_version('Libinsane', '1.0')
 from gi.repository import Libinsane
 from gi.repository import GObject
@@ -17,12 +16,18 @@ class Logger(GObject.GObject, Libinsane.Logger):
 
 
 class Source():
+    """
+    Class to encapsulate source and device together
+    """
     def __init__(self, dev, src):
         self.dev = dev
         self.src = src
 
 
 class Scanner():
+    """
+    Scanner class, contains all methods necessary to scan pictures
+    """
     def __init__(self):
         # Set logger
         Libinsane.register_logger(Logger())
@@ -35,7 +40,7 @@ class Scanner():
 
     def list_devices(self):
         """
-        Lists available devices
+        Lists available devices. The list is assigned to self.device_list
         """
         print("Looking for scan devices ...")
         self.device_list = self.api.list_devices(Libinsane.DeviceLocations.ANY)
@@ -45,9 +50,8 @@ class Scanner():
 
     def list_sources(self, auto_set=True):
         """
-        Lists available sources for each device
+        Lists available sources for each device. The list is assigned to self.source_list
         :param auto_set: True to automatically set the active source to the first one of the list
-        :return:
         """
         print("Looking for scan sources ...")
         for device in self.device_list:
@@ -62,12 +66,17 @@ class Scanner():
     def get_device_name(self, dev):
         """
         Returns a string composed of the devices vendor and model name
-        :param dev: device
-        :return: descriptive name
+        :param dev: device object
+        :return: string of the descriptive name
         """
         return dev.get_dev_vendor() + " " + dev.get_dev_model()
 
     def get_source_name(self, source):
+        """
+        Returns a string composed of the sources device vendor, device model and source name
+        :param dev: source object
+        :return: string of the descriptive name
+        """
         return source.dev.get_dev_vendor() + " " + source.dev.get_dev_model() + " " + source.src.get_name()
 
     def set_active_source(self, source):
@@ -80,12 +89,19 @@ class Scanner():
         print("Setting %s as the active source" % self.get_source_name(source))
 
     def set_options(self):
+        """
+        Sets defined options to the active source
+        """
         opts = self.active_source.src.get_options()
         opts = {opt.get_name(): opt for opt in opts}
-        set_flags = opts["resolution"].set_value(self.resolution)
+        opts["resolution"].set_value(self.resolution)
         print("Resolution set to %d" % self.resolution)
 
     def scan(self, output_file):
+        """
+        Scans image and saves to output_file
+        :param output_file: name of the output file
+        """
         self.set_options()
         print("Starting scan")
         session = self.active_source.src.scan_start()
@@ -138,6 +154,12 @@ class Scanner():
 
 
 def raw_to_img(params, img_bytes):
+    """
+    Converts raw bytes to image object
+    :param params: image parameters
+    :param img_bytes: byte array
+    :return: image object
+    """
     fmt = params.get_format()
     assert (fmt == Libinsane.ImgFormat.RAW_RGB_24)
     (w, h) = (
@@ -149,6 +171,10 @@ def raw_to_img(params, img_bytes):
 
 
 def split_images(source_image):
+    """
+    Splits full image into cropped individual images
+    :param source_image: full image
+    """
     image1 = source_image.crop((0, 0, 2377, 3529)).rotate(90, expand=True)
     image1.save("splitTest1.jpg", format="JPEG")
     print("Image 1 saved")
@@ -158,6 +184,7 @@ def split_images(source_image):
     image3 = source_image.crop((0, 3529, 3546, 5921))
     image3.save("splitTest3.jpg", format="JPEG")
     print("Image 3 saved")
+
 
 # For testing
 if __name__ == "__main__":
