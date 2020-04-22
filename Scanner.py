@@ -112,14 +112,16 @@ class Scanner():
                     img.append(data)
                     r += len(data)
                     progress = int(r/total*100)
-                    print("Scan progress: %d%" % progress)
+                    print("Scan progress: %d%%" % progress)
                 img = b"".join(img)
                 print("Got {} bytes".format(len(img)))
                 if out is not None:
                     print("Saving page as {} ...".format(out))
                     if scan_params.get_format() == Libinsane.ImgFormat.RAW_RGB_24:
-                        img = self.raw_to_img(scan_params, img)
-                        img.save(out, format="PNG")
+                        img = raw_to_img(scan_params, img)
+                        img.save(out, format="JPEG")
+                        print("Full image saved")
+                        split_images(img)
                     else:
                         print("Warning: output format is {}".format(
                             scan_params.get_format()
@@ -131,22 +133,35 @@ class Scanner():
             if page_nb == 0:
                 print("No page in feeder ?")
         finally:
+            print("Scanning complete")
             session.cancel()
 
-    def raw_to_img(self, params, img_bytes):
-        fmt = params.get_format()
-        assert (fmt == Libinsane.ImgFormat.RAW_RGB_24)
-        (w, h) = (
-            params.get_width(),
-            int(len(img_bytes) / 3 / params.get_width())
-        )
-        print("Mode: RGB : Size: {}x{}".format(w, h))
-        return PIL.Image.frombuffer("RGB", (w, h), img_bytes, "raw", "RGB", 0, 1)
 
+def raw_to_img(params, img_bytes):
+    fmt = params.get_format()
+    assert (fmt == Libinsane.ImgFormat.RAW_RGB_24)
+    (w, h) = (
+        params.get_width(),
+        int(len(img_bytes) / 3 / params.get_width())
+    )
+    print("Mode: RGB : Size: {}x{}".format(w, h))
+    return PIL.Image.frombuffer("RGB", (w, h), img_bytes, "raw", "RGB", 0, 1)
+
+
+def split_images(source_image):
+    image1 = source_image.crop((0, 0, 2377, 3529)).rotate(90, expand=True)
+    image1.save("splitTest1.jpg", format="JPEG")
+    print("Image 1 saved")
+    image2 = source_image.crop((2377, 0, 4771, 3529)).rotate(90, expand=True)
+    image2.save("splitTest2.jpg", format="JPEG")
+    print("Image 2 saved")
+    image3 = source_image.crop((0, 3529, 3546, 5921))
+    image3.save("splitTest3.jpg", format="JPEG")
+    print("Image 3 saved")
 
 # For testing
 if __name__ == "__main__":
     scanner = Scanner()
     scanner.list_devices()
     scanner.list_sources()
-    scanner.scan("test.png")
+    scanner.scan("test2.jpg")
