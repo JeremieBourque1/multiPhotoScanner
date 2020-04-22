@@ -1,35 +1,32 @@
-#!/usr/bin/env python3
+from PySide2.QtWidgets import QApplication, QMainWindow, QLineEdit, QVBoxLayout, QMenu, QListWidgetItem,\
+    QDialog, QDialogButtonBox, QLabel, QPushButton, QSlider, QListWidget, QMessageBox
+from PySide2.QtUiTools import QUiLoader
+from Scanner import Scanner
 
-import gi
-gi.require_version('Libinsane', '1.0')
-from gi.repository import Libinsane
-from gi.repository import GObject
+class MainWindow(QMainWindow):
+    """
+    Main window class
+    """
+    def __init__(self, app):
+        """
+        MainWindow initialization
+        """
+        super(MainWindow, self).__init__()
+        ## app
+        self.app = app
+        ## ui object
+        self.ui = QUiLoader().load("mainwindow.ui")
+        self.ui.show()
+        self.ui.setWindowTitle("multiPhotoScanner")
+        self.setMinimumHeight(100)
+        self.setMinimumWidth(250)
 
-
-class Logger(GObject.GObject, Libinsane.Logger):
-    def do_log(self, lvl, msg):
-        if lvl <= Libinsane.LogLevel.WARNING:
-            return
-        print("{}: {}".format(lvl.value_nick, msg))
-
-
-class Scanner():
-    def __init__(self):
-        # Set logger
-        Libinsane.register_logger(Logger())
-        # Init Libinsane API
-        self.api = Libinsane.Api.new_safebet()
-
-    def list_devices(self):
-        print("Looking for scan devices ...")
-        devs = self.api.list_devices(Libinsane.DeviceLocations.ANY)
-        print("Found {} devices".format(len(devs)))
-        for dev in devs:
-            print("[{}] : [{}]".format(dev.get_dev_id(), dev.to_string()))
-        dev_id = devs[0].get_dev_id()
-
-
-# For testing
 if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow(app)
+    app.exec_()
+    sys.exit()
+
     scanner = Scanner()
     scanner.list_devices()
+    scanner.list_sources()
