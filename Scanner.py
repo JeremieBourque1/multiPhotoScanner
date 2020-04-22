@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import gi
-import sys
 import PIL.Image
 gi.require_version('Libinsane', '1.0')
 from gi.repository import Libinsane
 from gi.repository import GObject
+from crop import split_images
+from os import listdir, mkdir
+from os.path import isfile, join
 
 
 class Logger(GObject.GObject, Libinsane.Logger):
@@ -33,6 +35,10 @@ class Scanner():
         Libinsane.register_logger(Logger())
         # Init Libinsane API
         self.api = Libinsane.Api.new_safebet()
+        self.picture_format = (6, 4, "inch")
+        self.number_of_pictures = 3
+        self.orientation = "landscape"
+        self.album_directory = ""
         self.device_list = []
         self.source_list = []
         self.active_source = None
@@ -88,6 +94,37 @@ class Scanner():
         self.active_source = source
         print("Setting %s as the active source" % self.get_source_name(source))
 
+    def set_picture_format(self, width, height, unit):
+        """
+        Set the picture format
+        :param width: length of the long side of the picture
+        :param height: length of the short side of the picture
+        :param unit: length unit ("cm" or "inch")
+        :return success
+        """
+        if not (width > 0 and height > 0 and (unit == "inch" or unit =="cm")):
+            print("invalid format, reverting to previous format")
+            return False
+        else:
+            self.picture_format = (width, height, unit)
+            print("format %.2f %s x %.2f %s set" % (width, unit, height, unit))
+            return True
+
+    def set_orientation(self, orientation):
+        if orientation == "landscape" or orientation == "portrait":
+            self.orientation = orientation
+            print("Orientation set to %s" % orientation)
+        else:
+            print("Invalid orientation, reverting to previous orientation")
+
+    def set_album_directory(self, directory):
+        try:
+            mkdir(directory)
+        except FileExistsError:
+            pass
+        self.album_directory = directory
+        print("Album directory set to %s" % directory)
+
     def set_options(self):
         """
         Sets defined options to the active source
@@ -102,6 +139,7 @@ class Scanner():
         Scans image and saves to output_file
         :param output_file: name of the output file
         """
+        # TODO: check if active source is valid before scanning
         self.set_options()
         print("Starting scan")
         session = self.active_source.src.scan_start()
@@ -137,7 +175,8 @@ class Scanner():
                         img = raw_to_img(scan_params, img)
                         img.save(out, format="JPEG")
                         print("Full image saved")
-                        split_images(img)
+                        sub_images = split_images(img, self.resolution, self.picture_format, self.orientation, self.number_of_pictures)
+                        self.save_images(sub_images)
                     else:
                         print("Warning: output format is {}".format(
                             scan_params.get_format()
@@ -151,6 +190,22 @@ class Scanner():
         finally:
             print("Scanning complete")
             session.cancel()
+
+    def name_image(self):
+        biggest_number = 0
+        album_name = self.album_directory.split("\\")[-1]
+        files = [f for f in listdir(self.album_directory) if isfile(join(self.album_directory, f))]
+        for file in files:
+            if file[:len(album_name)] == album_name:
+                number = int(file[-8:-4])
+                if number > biggest_number:
+                    biggest_number = number
+        return "%s_%04d" % (album_name, biggest_number+1)
+
+    def save_images(self, images):
+        for image in images:
+            image.save("%s\\%s.jpg" % (self.album_directory, self.name_image()), format="JPEG")
+        print("Images saved")
 
 
 def raw_to_img(params, img_bytes):
@@ -170,25 +225,10 @@ def raw_to_img(params, img_bytes):
     return PIL.Image.frombuffer("RGB", (w, h), img_bytes, "raw", "RGB", 0, 1)
 
 
-def split_images(source_image):
-    """
-    Splits full image into cropped individual images
-    :param source_image: full image
-    """
-    image1 = source_image.crop((0, 0, 2377, 3529)).rotate(90, expand=True)
-    image1.save("splitTest1.jpg", format="JPEG")
-    print("Image 1 saved")
-    image2 = source_image.crop((2377, 0, 4771, 3529)).rotate(90, expand=True)
-    image2.save("splitTest2.jpg", format="JPEG")
-    print("Image 2 saved")
-    image3 = source_image.crop((0, 3529, 3546, 5921))
-    image3.save("splitTest3.jpg", format="JPEG")
-    print("Image 3 saved")
-
-
 # For testing
 if __name__ == "__main__":
     scanner = Scanner()
     scanner.list_devices()
     scanner.list_sources()
-    scanner.scan("test2.jpg")
+    scanner.set_album_directory("test_album")
+    scanner.scan("test3.jpg")
