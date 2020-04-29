@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import gi
+import sys
 import PIL.Image
 gi.require_version('Libinsane', '1.0')
 from gi.repository import Libinsane
@@ -25,6 +26,14 @@ class Source():
         self.dev = dev
         self.src = src
 
+    def get_source_name(self):
+        """
+        Returns a string composed of the sources device vendor, device model and source name
+        :param dev: source object
+        :return: string of the descriptive name
+        """
+        return self.dev.get_dev_vendor() + " " + self.dev.get_dev_model() + " " + self.src.get_name()
+
 
 class Scanner():
     """
@@ -41,6 +50,7 @@ class Scanner():
         self.album_directory = ""
         self.device_list = []
         self.source_list = []
+        self.source_dict = dict() # TODO: we should only have the dict, not the list
         self.active_source = None
         self.resolution = 600
 
@@ -64,10 +74,17 @@ class Scanner():
             sources = self.api.get_device(device.get_dev_id()).get_children()
             print("Available scan sources:")
             for src in sources:
-                print("- {}".format(src.get_name()))
-                self.source_list.append(Source(device, src))
+                src = Source(device, src)
+                name = src.get_source_name()
+                self.source_dict[name] = src
+                print("- {}".format(name))
+                self.source_list.append(src)
         if auto_set and len(self.source_list) > 0:
             self.set_active_source(self.source_list[0])
+
+    def list_all_scanners(self, auto_set=True):
+        self.list_devices()
+        self.list_sources(auto_set)
 
     def get_device_name(self, dev):
         """
@@ -77,14 +94,6 @@ class Scanner():
         """
         return dev.get_dev_vendor() + " " + dev.get_dev_model()
 
-    def get_source_name(self, source):
-        """
-        Returns a string composed of the sources device vendor, device model and source name
-        :param dev: source object
-        :return: string of the descriptive name
-        """
-        return source.dev.get_dev_vendor() + " " + source.dev.get_dev_model() + " " + source.src.get_name()
-
     def set_active_source(self, source):
         """
         Sets the active source
@@ -92,7 +101,7 @@ class Scanner():
         :return:
         """
         self.active_source = source
-        print("Setting %s as the active source" % self.get_source_name(source))
+        print("Setting %s as the active source" % source.get_source_name())
 
     def set_picture_format(self, width, height, unit):
         """
@@ -109,6 +118,13 @@ class Scanner():
             self.picture_format = (width, height, unit)
             print("format %.2f %s x %.2f %s set" % (width, unit, height, unit))
             return True
+
+    def set_number_of_pictures(self, num):
+        if not(type(num) is int and num > 0 and num < 100):
+            print("Invalid number of pictures, reverting to previous number")
+        else:
+            self.number_of_pictures = num
+            print("Number of pictures set to %d" % num)
 
     def set_orientation(self, orientation):
         if orientation == "landscape" or orientation == "portrait":
@@ -140,7 +156,7 @@ class Scanner():
         opts["resolution"].set_value(self.resolution)
         print("Resolution set to %d" % self.resolution)
 
-    def scan(self, output_file):
+    def scan(self, output_file):  # TODO: remove output_file
         """
         Scans image and saves to output_file
         :param output_file: name of the output file
@@ -232,10 +248,9 @@ def raw_to_img(params, img_bytes):
 
 
 # For testing
-if __name__ == "__main__":
-    scanner = Scanner()
-    scanner.list_devices()
-    scanner.list_sources()
-    scanner.set_album_directory("test_album")
-    scanner.set_resolution(300)
-    scanner.scan("test3.jpg")
+#if __name__ == "__main__":
+#    scanner = Scanner()
+#    scanner.list_all_scanners()
+#    scanner.set_album_directory("test_album")
+#    scanner.set_resolution(300)
+#    scanner.scan("test3.jpg")
