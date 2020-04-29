@@ -1,7 +1,7 @@
 import PIL.Image
 
 
-def split_images(source_image, resolution, picture_format, orientation, number_of_pictures=3):
+def split_images(source_image, scan_dimensions, resolution, picture_format, orientation, number_of_pictures=3):
     """
     Splits full image into cropped individual images
     :param source_image: full image
@@ -15,9 +15,11 @@ def split_images(source_image, resolution, picture_format, orientation, number_o
     image_formats = []
     images = [None] * number_of_pictures
     w, h = length_to_pixels(resolution, picture_format)
+    scan_width = scan_dimensions[0]
+    scan_height = scan_dimensions[1]
     if number_of_pictures == 3:
         # ((left, top, right, bottom), rotate)
-        image_formats = [((0, 0, h, w), True), ((h, 0, 2*h, w), True), ((0, w, w, h+w), False)]
+        image_formats = [((0, 0, h, w), True), ((scan_width-h, 0, scan_width, w), True), ((0, scan_height-h, w, scan_height), False)]
         valid = True
     if valid:
         for i in range(number_of_pictures):

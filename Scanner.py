@@ -125,6 +125,12 @@ class Scanner():
         self.album_directory = directory
         print("Album directory set to %s" % directory)
 
+    def set_resolution(self, res):
+        if not (res > 0 and res < 2700):
+            print("Invalid resolution, reverting to previous resolution")
+        else:
+            self.resolution = res
+
     def set_options(self):
         """
         Sets defined options to the active source
@@ -175,7 +181,7 @@ class Scanner():
                         img = raw_to_img(scan_params, img)
                         img.save(out, format="JPEG")
                         print("Full image saved")
-                        sub_images = split_images(img, self.resolution, self.picture_format, self.orientation, self.number_of_pictures)
+                        sub_images = split_images(img, (scan_params.get_width(), scan_params.get_height()), self.resolution, self.picture_format, self.orientation, self.number_of_pictures)
                         self.save_images(sub_images)
                     else:
                         print("Warning: output format is {}".format(
@@ -231,4 +237,5 @@ if __name__ == "__main__":
     scanner.list_devices()
     scanner.list_sources()
     scanner.set_album_directory("test_album")
+    scanner.set_resolution(300)
     scanner.scan("test3.jpg")
