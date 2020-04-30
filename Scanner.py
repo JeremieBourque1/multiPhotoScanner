@@ -39,11 +39,12 @@ class Scanner():
     """
     Scanner class, contains all methods necessary to scan pictures
     """
-    def __init__(self):
+    def __init__(self, mainWindow):
         # Set logger
         Libinsane.register_logger(Logger())
         # Init Libinsane API
         self.api = Libinsane.Api.new_safebet()
+        self.mainWindow = mainWindow
         self.picture_format = (6, 4, "inch")
         self.number_of_pictures = 3
         self.orientation = "landscape"
@@ -53,6 +54,7 @@ class Scanner():
         self.source_dict = dict() # TODO: we should only have the dict, not the list
         self.active_source = None
         self.resolution = 600
+        self.shouldRun = True
 
     def list_devices(self):
         """
@@ -156,7 +158,7 @@ class Scanner():
         opts["resolution"].set_value(self.resolution)
         print("Resolution set to %d" % self.resolution)
 
-    def scan(self, output_file):  # TODO: remove output_file
+    def scan(self):  # TODO: remove output_file
         """
         Scans image and saves to output_file
         :param output_file: name of the output file
@@ -166,51 +168,34 @@ class Scanner():
         print("Starting scan")
         session = self.active_source.src.scan_start()
         try:
-            page_nb = 0
-            while not session.end_of_feed() and page_nb < 20:
-                # Do not assume that all the pages will have the same size !
-                scan_params = session.get_scan_parameters()
-                print("Expected scan parameters: {} ; {}x{} = {} bytes".format(
-                    scan_params.get_format(),
-                    scan_params.get_width(), scan_params.get_height(),
-                    scan_params.get_image_size()))
-                total = scan_params.get_image_size()
-                img = []
-                r = 0
-                if output_file is not None:
-                    out = output_file.format(page_nb)
-                else:
-                    out = None
-                print("Scanning page {} --> {}".format(page_nb, out))
-                while not session.end_of_page():
-                    data = session.read_bytes(128 * 1024)
-                    data = data.get_data()
-                    img.append(data)
-                    r += len(data)
-                    progress = int(r/total*100)
-                    print("Scan progress: %d%%" % progress)
+            scan_params = session.get_scan_parameters()
+            print("Expected scan parameters: {} ; {}x{} = {} bytes".format(
+                scan_params.get_format(),
+                scan_params.get_width(), scan_params.get_height(),
+                scan_params.get_image_size()))
+            total = scan_params.get_image_size()
+            img = []
+            r = 0
+            while (not session.end_of_page()) and self.shouldRun is True:
+                data = session.read_bytes(128 * 1024)
+                data = data.get_data()
+                img.append(data)
+                r += len(data)
+                progress = int(r/total*100)
+                self.mainWindow.scanProgress.setValue(progress)
+                print("Scan progress: %d%%  %d" % (progress, self.shouldRun))
+            print("Out of scan loop")
+            if self.shouldRun:
                 img = b"".join(img)
                 print("Got {} bytes".format(len(img)))
-                if out is not None:
-                    print("Saving page as {} ...".format(out))
-                    if scan_params.get_format() == Libinsane.ImgFormat.RAW_RGB_24:
-                        img = raw_to_img(scan_params, img)
-                        img.save(out, format="JPEG")
-                        print("Full image saved")
-                        sub_images = split_images(img, (scan_params.get_width(), scan_params.get_height()), self.resolution, self.picture_format, self.orientation, self.number_of_pictures)
-                        self.save_images(sub_images)
-                    else:
-                        print("Warning: output format is {}".format(
-                            scan_params.get_format()
-                        ))
-                        with open(out, 'wb') as fd:
-                            fd.write(img)
-                page_nb += 1
-                print("Page {} scanned".format(page_nb))
-            if page_nb == 0:
-                print("No page in feeder ?")
+                if scan_params.get_format() == Libinsane.ImgFormat.RAW_RGB_24:
+                    img = raw_to_img(scan_params, img)
+                    sub_images = split_images(img, (scan_params.get_width(), scan_params.get_height()), self.resolution, self.picture_format, self.orientation, self.number_of_pictures)
+                    self.save_images(sub_images)
+            else:
+                print("Cancelling session")
+                session.cancel()  # TODO: blocs here, fix this
         finally:
-            print("Scanning complete")
             session.cancel()
 
     def name_image(self):

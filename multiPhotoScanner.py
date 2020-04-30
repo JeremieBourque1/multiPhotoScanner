@@ -1,14 +1,42 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtCore import QThread
 from PyQt5 import uic
 from Scanner import Scanner
+
+
+class ScanThread(QThread):
+    """
+    Thread class to run the scan
+    """
+    def __init__(self, mainWindow):
+        super(ScanThread, self).__init__()
+        self.mainWindow = mainWindow
+
+    def run(self):
+        """
+        run thread
+        """
+        self.mainWindow.setEnabledAllGroups(False)
+        self.mainWindow.startScanButton.setEnabled(False)
+        self.mainWindow.cancelScanButton.setEnabled(True)
+        self.mainWindow.scanner.scan()
+        self.mainWindow.setEnabledAllGroups(True)
+        self.mainWindow.startScanButton.setEnabled(True)
+        self.mainWindow.cancelScanButton.setEnabled(False)
+        self.mainWindow.scanProgress.setValue(0)
+
+    def stop(self):
+        """
+        Stop thread
+        """
+        self.mainWindow.scanner.shouldRun = False
 
 
 class MainWindow(QMainWindow):
     """
     Main window class
     """
-
     def __init__(self, app):
         """
         MainWindow initialization
@@ -16,12 +44,15 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.app = app
         self.initUi()
-        self.scanner = Scanner()
+        self.scanner = Scanner(self)
+        self.scan_thread = ScanThread(self)
         self.picture_formats_dict = {'6x4 inch': (6, 4, "inch"), "custom": (0, 0, "inch")}
         self.units = ['inch', 'cm']
 
+        # Connect signals
         self.pictureFormatComboBox.currentTextChanged.connect(self.updateFormatProperties)
         self.startScanButton.clicked.connect(self.startScan)
+        self.cancelScanButton.clicked.connect(self.cancelScan)
 
         populateComboBox(self.scannerComboBox, self.makeScannerList())
         populateComboBox(self.pictureFormatComboBox, list(self.picture_formats_dict.keys()))
@@ -76,11 +107,12 @@ class MainWindow(QMainWindow):
             self.scanner.set_orientation("portrait")
 
     def startScan(self):
-        self.setEnabledAllGroups(False)
         self.applyOptions()
-        self.scanner.scan("test4.jpg")  # TODO: make the scan run in another QThread
-        self.setEnabledAllGroups(True)  # TODO: this should be connected to the signal indicating the end of the scan
+        self.scan_thread.start()
 
+    def cancelScan(self):
+        print("Cancelling scan")
+        self.scan_thread.stop()
 
 
 def populateComboBox(comboBox, items):

@@ -13,7 +13,7 @@
     <x>0</x>
     <y>0</y>
     <width>410</width>
-    <height>425</height>
+    <height>532</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -79,7 +79,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="dpiLabel">
          <property name="text">
-          <string>dpi</string>
+          <string>Resolution (DPI)</string>
          </property>
         </widget>
        </item>
@@ -241,6 +241,39 @@
        <string>Start Scan</string>
       </property>
      </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="cancelScanButton">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Cancel scan</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QProgressBar" name="scanProgress">
+      <property name="value">
+       <number>0</number>
+      </property>
+      <property name="textVisible">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
     </item>
    </layout>
   </widget>
