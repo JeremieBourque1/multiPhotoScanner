@@ -1,8 +1,9 @@
 import sys
+import os
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import QThread
 from PyQt5 import uic
-from Scanner import Scanner
+from .Scanner import Scanner
 
 
 class ScanThread(QThread):
@@ -120,7 +121,11 @@ def populateComboBox(comboBox, items):
     comboBox.addItems(items)
 
 
-if __name__ == "__main__":
+def main():
+    # Change working directory to this script's directory to easily access mainwindow.ui
+    print("Path before change: %s" % os.getcwd())
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    print("Path after change: %s" % os.getcwd())
     app = QApplication(sys.argv)
     window = MainWindow(app)
     app.exec_()

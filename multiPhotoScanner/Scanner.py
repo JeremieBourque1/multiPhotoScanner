@@ -6,7 +6,7 @@ import PIL.Image
 gi.require_version('Libinsane', '1.0')
 from gi.repository import Libinsane
 from gi.repository import GObject
-from crop import split_images
+from .crop import split_images
 from os import listdir, mkdir
 from os.path import isfile, join
 
@@ -20,7 +20,7 @@ class Logger(GObject.GObject, Libinsane.Logger):
 
 class Source():
     """
-    Class to encapsulate source and device together
+    Class to encapsulate multiPhotoScanner and device together
     """
     def __init__(self, dev, src):
         self.dev = dev
@@ -28,8 +28,8 @@ class Source():
 
     def get_source_name(self):
         """
-        Returns a string composed of the sources device vendor, device model and source name
-        :param dev: source object
+        Returns a string composed of the sources device vendor, device model and multiPhotoScanner name
+        :param dev: multiPhotoScanner object
         :return: string of the descriptive name
         """
         return self.dev.get_dev_vendor() + " " + self.dev.get_dev_model() + " " + self.src.get_name()
@@ -69,7 +69,7 @@ class Scanner():
     def list_sources(self, auto_set=True):
         """
         Lists available sources for each device. The list is assigned to self.source_list
-        :param auto_set: True to automatically set the active source to the first one of the list
+        :param auto_set: True to automatically set the active multiPhotoScanner to the first one of the list
         """
         print("Looking for scan sources ...")
         for device in self.device_list:
@@ -98,12 +98,12 @@ class Scanner():
 
     def set_active_source(self, source):
         """
-        Sets the active source
-        :param source: source
+        Sets the active multiPhotoScanner
+        :param source: multiPhotoScanner
         :return:
         """
         self.active_source = source
-        print("Setting %s as the active source" % source.get_source_name())
+        print("Setting %s as the active multiPhotoScanner" % source.get_source_name())
 
     def set_picture_format(self, width, height, unit):
         """
@@ -151,7 +151,7 @@ class Scanner():
 
     def set_options(self):
         """
-        Sets defined options to the active source
+        Sets defined options to the active multiPhotoScanner
         """
         opts = self.active_source.src.get_options()
         opts = {opt.get_name(): opt for opt in opts}
@@ -163,7 +163,7 @@ class Scanner():
         Scans image and saves to output_file
         :param output_file: name of the output file
         """
-        # TODO: check if active source is valid before scanning
+        # TODO: check if active multiPhotoScanner is valid before scanning
         self.set_options()
         print("Starting scan")
         session = self.active_source.src.scan_start()
